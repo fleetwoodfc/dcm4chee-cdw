@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- PTPublish/PTBurn 3 SDK MBean descriptor for dcm4chee-cdw -->
+
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>Media Writer Service for Primera Technology PTPublish/PTBurn 3 SDK.
+   Submits ISO images to a Primera Disc Publisher robot (Bravo SE/II/PRO/XR/XRP/Xi/4100)
+   by writing a Job Request File (.JRQ) to a PTBurn hot-folder and polling for
+   completion (.don/.err). Compatible with PTBurn SDK revision 3.24 (Sep 2011).
+   </description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.cdw.ptpublish.PTPublishService</class>
+
+   <constructor>
+      <description>Default constructor</description>
+      <name>PTPublishService</name>
+   </constructor>
+
+   <!-- Attributes -->
+
+   <attribute access="read-write"
+      getMethod="getJobRequestFolder"
+      setMethod="setJobRequestFolder">
+      <description>UNC or local path to the PTBurn Job Request Folder (hot-folder).
+      PTBurn must have write access to this folder from the service machine.
+      Example: /var/lib/dcm4chee-cdw/ptburn/jobs
+      </description>
+      <name>JobRequestFolder</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="/var/lib/dcm4chee-cdw/ptburn/jobs" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getStatusFolder"
+      setMethod="setStatusFolder">
+      <description>UNC or local path to the folder where PTBurn writes its status files
+      (SystemStatus.txt and RobotName.txt). Leave blank to use JobRequestFolder.
+      Override only if StatusPath is set differently in PTSETUP.INI.
+      </description>
+      <name>StatusFolder</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="/var/lib/dcm4chee-cdw/ptburn/status" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getLocalPathPrefix"
+      setMethod="setLocalPathPrefix">
+      <description>Local base path used by dcm4chee to locate ISO and label files.
+      Paths written to JRQ keys ImageFile and PrintLabel must be translated from
+      this local prefix to SharedPathPrefix.
+      </description>
+      <name>LocalPathPrefix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="/opt/jboss/server/default/data" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getSharedPathPrefix"
+      setMethod="setSharedPathPrefix">
+      <description>PTBurn-visible shared folder prefix for files referenced in JRQ.
+      Example: \\HOST\ptburn
+      </description>
+      <name>SharedPathPrefix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="\\HOST\ptburn" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getRobotName"
+      setMethod="setRobotName">
+      <description>Name of the Primera robot as it appears in [RobotList] of
+      SystemStatus.txt (e.g. "Disc Publisher XRP"). Used to locate the per-robot
+      status file for job completion details.
+      </description>
+      <name>RobotName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="Disc Publisher XRP" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getClientId"
+      setMethod="setClientId">
+      <description>ClientID string written into each .JRQ file (up to 32 chars).
+      Appears in the PTBurn window and status files.
+      </description>
+      <name>ClientId</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="dcm4chee-cdw" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getCopies"
+      setMethod="setCopies">
+      <description>Number of disc copies to produce per media creation request (1-10000).
+      </description>
+      <name>Copies</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getBurnSpeed"
+      setMethod="setBurnSpeed">
+      <description>Requested burn speed passed to PTBurn (1-100). 0 = max available speed.
+      </description>
+      <name>BurnSpeed</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isVerifyDisc"
+      setMethod="setVerifyDisc">
+      <description>If true, PTBurn verifies each disc after burning (VerifyDisc=YES).
+      </description>
+      <name>VerifyDisc</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isCloseDisc"
+      setMethod="setCloseDisc">
+      <description>If true, the disc is finalized so no further sessions can be added
+      (CloseDisc=YES). Recommended for DICOM media.
+      </description>
+      <name>CloseDisc</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isRejectIfNotBlank"
+      setMethod="setRejectIfNotBlank">
+      <description>If true, discs that are not blank are rejected (RejectIfNotBlank=YES).
+      </description>
+      <name>RejectIfNotBlank</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isDeleteFiles"
+      setMethod="setDeleteFiles">
+      <description>If true, PTBurn deletes the ISO image and JRQ file from the hot-folder
+      after job completion (DeleteFiles=YES). Only set if the ISO is in a sub-folder of
+      the hot-folder, as PTBurn deletes the entire sub-folder.
+      </description>
+      <name>DeleteFiles</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getPollIntervalMs"
+      setMethod="setPollIntervalMs">
+      <description>Interval in milliseconds between polls for .don/.err completion
+      marker files. Minimum 500ms.
+      </description>
+      <name>PollIntervalMs</name>
+      <type>int</type>
+      <descriptors>
+         <value value="5000" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getJobTimeoutSecs"
+      setMethod="setJobTimeoutSecs">
+      <description>Maximum seconds to wait for a job to complete. 0 = wait indefinitely.
+      </description>
+      <name>JobTimeoutSecs</name>
+      <type>int</type>
+      <descriptors>
+         <value value="120" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getNumberOfRetries"
+      setMethod="setNumberOfRetries">
+      <description>Number of retries on transient failure (e.g. no blank media).
+      </description>
+      <name>NumberOfRetries</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getRetryIntervalSecs"
+      setMethod="setRetryIntervalSecs">
+      <description>Seconds to wait between retries (minimum 10).
+      </description>
+      <name>RetryIntervalSecs</name>
+      <type>int</type>
+      <descriptors>
+         <value value="60" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getImportance"
+      setMethod="setImportance">
+      <description>Job priority passed to PTBurn (0=highest, 400=lowest; default 4).
+      Lower values are processed first.
+      </description>
+      <name>Importance</name>
+      <type>int</type>
+      <descriptors>
+         <value value="4" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getBinId"
+      setMethod="setBinId">
+      <description>Bin from which PTBurn picks blank discs: 0=both/default, 1=left, 2=right.
+      </description>
+      <name>BinId</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isKeepSpoolFiles"
+      setMethod="setKeepSpoolFiles">
+      <description>Keep spool files on failure (for debugging).
+      </description>
+      <name>KeepSpoolFiles</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isPrintLabel"
+      setMethod="setPrintLabel">
+      <description>If true, invoke the LabelPrintService after PTBurn completes
+      (in addition to any PrintLabel= specified in the JRQ).
+      </description>
+      <name>PrintLabel</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getKeepLabelFiles"
+      setMethod="setKeepLabelFiles">
+      <description>Controls when label files are kept: YES, NO, or IF_NOT_PRINTED.
+      </description>
+      <name>KeepLabelFiles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="IF_NOT_PRINTED" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getLabelPrintName"
+      setMethod="setLabelPrintName">
+      <description>JMX ObjectName of the LabelPrint service (optional).
+      </description>
+      <name>LabelPrintName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <descriptor name="persistPolicy" value="Never"/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>JMX ObjectName of the SpoolDir service.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <descriptor name="persistPolicy" value="Never"/>
+      </descriptors>
+   </attribute>
+
+   <!-- Operations -->
+   <operation>
+      <description>Returns current PTBurn interface state for a job ID based on
+      hot-folder marker files and timeout window.
+      States: JRQ, QRJ, INP, DON, ERR, TIMEOUT(...), UNKNOWN.
+      </description>
+      <name>getJobState</name>
+      <parameter>
+         <description>PTBurn job ID (with or without extension).</description>
+         <name>jobId</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   &defaultOperations;
+
+</mbean>

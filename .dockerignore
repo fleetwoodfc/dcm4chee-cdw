@@ -1,0 +1,5 @@
+.DS_Store
+target/
+*.class
+build.properties
+# jboss-4.2.3.GA/ is intentionally included (local zip for Docker build)

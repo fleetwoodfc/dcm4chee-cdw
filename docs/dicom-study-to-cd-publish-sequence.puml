@@ -1,0 +1,83 @@
+@startuml
+title dcm4chee-cdw Sequence: Receive DICOM Study to Publish CD/DVD with Label
+
+actor "Modality / SCU" as Modality
+participant "StoreSCP\n(StoreScpService)" as StoreSCP
+participant "SpoolDir\n(SpoolDirService)" as SpoolDir
+participant "Scheduler" as Scheduler
+participant "MCR Emulator\n(MediaCreationRequestEmulatorService)" as Emulator
+queue "JMS Queue\nMediaComposer" as QComposer
+participant "MediaComposer\n(MediaComposerService)" as Composer
+participant "Fileset Builder\n/ DicomDirDOM" as Fileset
+queue "JMS Queue\nMakeIsoImage" as QIso
+participant "MakeIsoImage\n(MakeIsoImageService)" as MkIso
+participant "mkisofs" as Mkisofs
+queue "JMS Queue\nPTPublish" as QPublish
+participant "PTPublish\n(PTPublishService)" as Publish
+collections "ISO Share\nptburn/iso" as IsoShare
+collections "Label Share\nptburn/label" as LabelShare
+collections "PTBurn Job Folder\nptburn/jobs" as JobFolder
+collections "PTBurn Status Folder\nptburn/status" as StatusFolder
+participant "PTBurn / Primera Publisher" as PTBurn
+
+== Receive Study ==
+Modality -> StoreSCP : C-STORE instances for study
+StoreSCP -> SpoolDir : register and persist received instance files\nin cdw.spool archive buckets
+SpoolDir --> StoreSCP : stored file locations
+StoreSCP --> Modality : C-STORE-RSP success
+
+== Detect and Create Media Request ==
+Scheduler -> Emulator : poll()
+Emulator -> SpoolDir : inspect received objects / emulate request files
+SpoolDir --> Emulator : candidate study instances and trigger files
+Emulator -> Emulator : build MediaCreationRequest\n(media writer = PTPublish, copies, fileset ID, volume ID)
+Emulator -> QComposer : enqueue MediaCreationRequest
+
+== Compose Fileset ==
+QComposer -> Composer : deliver MediaCreationRequest
+Composer -> Composer : initialize fileset root\nunder /data/fileset/<uid>
+loop for each referenced SOP instance
+  Composer -> SpoolDir : move/copy instance into fileset tree
+  SpoolDir --> Composer : instance placed in fileset
+end
+Composer -> Fileset : build DICOMDIR and media directory structure
+Fileset --> Composer : DICOMDIR written
+Composer -> Fileset : create printable label content from study/patient metadata
+Fileset -> LabelShare : write label file (PNG)
+LabelShare --> Fileset : label path available
+Fileset --> Composer : fileset ready
+Composer -> QIso : enqueue updated MediaCreationRequest\n(filesetDir, labelFile)
+
+== Create ISO Image ==
+QIso -> MkIso : deliver MediaCreationRequest
+MkIso -> MkIso : resolve ISO output path\n/data/iso/<filesetUid>.iso
+MkIso -> Mkisofs : generate ISO from fileset directory
+Mkisofs --> MkIso : ISO image created
+MkIso -> IsoShare : write ISO file
+IsoShare --> MkIso : ISO path available
+MkIso -> QPublish : enqueue updated MediaCreationRequest\n(isoImageFile, labelFile)
+
+== Publish to PTBurn ==
+QPublish -> Publish : deliver MediaCreationRequest
+Publish -> Publish : map local paths to shared paths\nImageFile -> \\HOST\ptburn\iso\...\nPrintLabel -> \\HOST\ptburn\label\...
+Publish -> JobFolder : write JRQ file\nwith ImageFile, PrintLabel, copies, speed, verify, close-disc
+JobFolder --> Publish : JRQ accepted
+
+== Burn Disc and Print Label ==
+PTBurn -> JobFolder : poll hot folder for new JRQ
+PTBurn -> IsoShare : open ISO referenced by ImageFile
+PTBurn -> LabelShare : open label referenced by PrintLabel
+PTBurn -> PTBurn : burn CD/DVD and print disc label
+PTBurn -> StatusFolder : write .don / .err and robot status files
+
+== Completion ==
+Publish -> StatusFolder : wait for completion status
+StatusFolder --> Publish : job done or error details
+Publish -> Publish : mark MediaCreationRequest done / failed
+
+note over Composer,MkIso
+Fileset stays internal to the container.
+Only the ISO and label artifacts are shared out for PTBurn consumption.
+end note
+
+@enduml

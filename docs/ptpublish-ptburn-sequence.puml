@@ -1,0 +1,47 @@
+@startuml
+title PTPublish <-> PTBurn / Primera Publisher Sequence
+
+participant "PTPublishService" as PTP
+collections "PTBurn Job Folder\n(ptburn/jobs)" as Jobs
+collections "PTBurn Status Folder\n(ptburn/status)" as Status
+participant "PTBurn Service" as PTBurn
+participant "Primera Publisher\n(Burner + Printer)" as Robot
+collections "ISO Share\n(ptburn/iso)" as IsoShare
+collections "Label Share\n(ptburn/label)" as LabelShare
+
+== Job Submission ==
+PTP -> PTP : validate ISO exists
+PTP -> PTP : map local paths to shared paths\nImageFile, PrintLabel
+PTP -> Jobs : write <JobID>.jrq\n(JobID, ImageFile, Copies, Verify, CloseDisc, PrintLabel)
+PTP -> PTP : waitForCompletion(JobID)\npoll for .don/.err
+
+== PTBurn Processing ==
+PTBurn -> Jobs : poll hot-folder for .jrq
+PTBurn -> Jobs : read <JobID>.jrq
+PTBurn -> IsoShare : open ISO from ImageFile
+opt PrintLabel provided
+  PTBurn -> LabelShare : open label file from PrintLabel
+end
+PTBurn -> Robot : burn disc and print label
+PTBurn -> Status : write robot status updates\n(SystemStatus.txt, <RobotName>.txt)
+
+alt Job success
+  PTBurn -> Jobs : write <JobID>.don
+  PTP -> Jobs : detect .don
+  PTP -> Status : read <RobotName>.txt\nvalidate CurrentStatusState
+  PTP -> PTP : mark request successful
+else Job failed
+  PTBurn -> Jobs : write <JobID>.err
+  PTP -> Jobs : detect .err
+  PTP -> Status : read <RobotName>.txt\nextract JobErrorString/JobErrorNumber
+  PTP -> PTP : raise MediaCreationException (failed)
+else Job timeout
+  PTP -> PTP : no .don/.err before deadline
+  PTP -> PTP : raise MediaCreationException (timeout)
+end
+
+opt Retry enabled (numberOfRetries > 0)
+  PTP -> PTP : set request status pending\nwait retryInterval\nresubmit JRQ
+end
+
+@enduml

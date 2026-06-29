@@ -1,0 +1,37 @@
+# dcm4chee-cdw-2.17.1 Docker Compose
+#
+# Usage:
+#   docker compose up -d
+#
+# DICOM AE: DCM4CHEE_CDW @ localhost:11112
+# JMX console: http://localhost:8080/jmx-console  (admin/admin)
+
+services:
+  dcm4chee-cdw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dcm4chee-cdw:2.17.1
+    container_name: dcm4chee-cdw
+    ports:
+      - "10104:10104"   # DICOM
+      - "8080:8080"     # JBoss HTTP / JMX console
+    volumes:
+      # PTBurn Job share (.jrq in, .don/.err out)
+      - ./ptburn/jobs:/var/lib/dcm4chee-cdw/ptburn/jobs
+      # PTBurn Status share (SystemStatus.txt, <RobotName>.txt)
+      - ./ptburn/status:/var/lib/dcm4chee-cdw/ptburn/status
+      # ISO share referenced by ImageFile in JRQ
+      - ./ptburn/iso:/opt/jboss/server/default/data/iso
+      # Label share referenced by PrintLabel in JRQ
+      - ./ptburn/label:/opt/jboss/server/default/data/label
+    environment:
+      # Override JVM options if needed
+      JAVA_OPTS: "-Xms128m -Xmx512m -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8080/jmx-console/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
