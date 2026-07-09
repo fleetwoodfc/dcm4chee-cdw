@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DICOM CDW Server — Product Brochure</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121a33;
+      --muted: #9fb0d1;
+      --text: #e7edff;
+      --accent: #66d9ef;
+      --accent2: #8affc1;
+      --line: #2a3a66;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.55;
+      background: linear-gradient(180deg, #0b1020 0%, #0a0f1d 100%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+    .hero {
+      background: radial-gradient(1200px 400px at 20% -10%, rgba(102,217,239,.18), transparent),
+                  radial-gradient(900px 320px at 80% -20%, rgba(138,255,193,.12), transparent),
+                  var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 10px; font-size: 2rem; letter-spacing: .2px; }
+    h2 { margin-top: 0; font-size: 1.35rem; }
+    h3 { margin-bottom: 8px; }
+    p, li { color: #d8e2ff; }
+    .muted { color: var(--muted); }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-size: .9rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .card {
+      grid-column: span 12;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .card.half { grid-column: span 12; }
+    @media (min-width: 900px) {
+      .card.half { grid-column: span 6; }
+    }
+    ul { margin-top: 8px; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+    }
+    pre {
+      background: #0a1226;
+      border: 1px solid #22345f;
+      border-radius: 10px;
+      padding: 14px;
+      overflow: auto;
+      color: #d4f8ff;
+    }
+    .kpi {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .kpi .tile {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #0d1630;
+    }
+    .tile .label { color: var(--muted); font-size: .85rem; }
+    .tile .value { color: var(--accent2); font-size: 1rem; font-weight: 600; margin-top: 4px; }
+    .footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: .9rem;
+      border-top: 1px dashed var(--line);
+      padding-top: 14px;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>DICOM CDW Server</h1>
+      <p class="muted">Product Brochure — Hybrid (Business + Technical)</p>
+      <p>
+        <strong>dcm4chee-cdw</strong> is a Java-based implementation of a DICOM Media Creation Management Server.
+        It receives imaging content, composes standards-oriented media outputs, generates optional web and label artifacts,
+        and supports practical operational handoff to writer/publish workflows.
+      </p>
+      <div>
+        <span class="pill">DICOM Media Creation</span>
+        <span class="pill">Queue-Based Processing</span>
+        <span class="pill">XSLT Label/Web Templates</span>
+        <span class="pill">PTBurn-Compatible Workflow</span>
+        <span class="pill">Docker-Ready Deployment</span>
+      </div>
+      <div class="kpi">
+        <div class="tile"><div class="label">Primary Stack</div><div class="value">Java + XSLT</div></div>
+        <div class="tile"><div class="label">Deployment Style</div><div class="value">Container + JBoss runtime model</div></div>
+        <div class="tile"><div class="label">Ops Access</div><div class="value">DICOM endpoint + JMX/HTTP</div></div>
+        <div class="tile"><div class="label">Workflow Fit</div><div class="value">Legacy-modern bridge</div></div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card half">
+        <h2>Executive Value</h2>
+        <ul>
+          <li>Automates media creation tasks that are often manual and error-prone.</li>
+          <li>Provides repeatable, inspectable workflow stages for imaging operations teams.</li>
+          <li>Supports interoperability requirements where physical or packaged media remains necessary.</li>
+          <li>Allows modernization (containerization) without discarding proven operational patterns.</li>
+        </ul>
+      </article>
+
+      <article class="card half">
+        <h2>What It Does</h2>
+        <ol>
+          <li>Accepts DICOM objects and media creation requests.</li>
+          <li>Composes filesets and optional web content.</li>
+          <li>Generates ISO images and optional labels.</li>
+          <li>Passes jobs to downstream writer/publish services.</li>
+          <li>Maintains queue-based status visibility and operational control.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Key Capabilities</h2>
+        <h3>DICOM Media Creation Management</h3>
+        <ul>
+          <li>Implements core behavior of a DICOM media creation server.</li>
+          <li>Supports patient/study-driven packaging patterns.</li>
+          <li>Designed for asynchronous, service-based execution.</li>
+        </ul>
+
+        <h3>Label and Web Output Customization</h3>
+        <ul>
+          <li><code>label.xsl</code> drives output layout for media labels.</li>
+          <li><code>common.xsl</code> centralizes reusable formatting templates.</li>
+          <li><code>web.xsl</code> + related XSL files generate browsable media content.</li>
+        </ul>
+
+        <h3>PT Publish Workflow Alignment</h3>
+        <ul>
+          <li>Supports share-folder integration for job/status exchanges.</li>
+          <li>Fits operational pipelines where robotic burn/print systems are used.</li>
+          <li>Encourages deterministic handoff via generated request artifacts.</li>
+        </ul>
+      </article>
+
+      <article class="card half">
+        <h2>Reference Deployment</h2>
+        <ul>
+          <li>DICOM CDW service exposed on DICOM and HTTP/JMX ports.</li>
+          <li>Mounted volumes for job, status, ISO, and label data exchange.</li>
+          <li>Optional integration with external writer/robot systems.</li>
+        </ul>
+        <pre><code># quick start
+# from repository root
+docker compose up -d
+
+# typical endpoints
+# DICOM: localhost:10104
+# JMX console: http://localhost:8080/jmx-console</code></pre>
+      </article>
+
+      <article class="card half">
+        <h2>Operational Controls</h2>
+        <ul>
+          <li>JMX-exposed services and attributes for runtime tuning.</li>
+          <li>Configurable JVM settings via <code>JAVA_OPTS</code>.</li>
+          <li>Health-check friendly container lifecycle support.</li>
+          <li>Template-level control over generated user-facing artifacts.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Security & Reliability Recommendations</h2>
+        <ul>
+          <li>Restrict administrative interfaces and segment DICOM traffic.</li>
+          <li>Use controlled access for shared folders and generated artifacts.</li>
+          <li>Harden host/container baseline and capture queue/write failures in monitoring.</li>
+          <li>Define backup/retention policies for ISO, label, and job audit artifacts.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Ideal Use Cases</h2>
+        <ul>
+          <li>Radiology departments needing dependable CD/DVD packaging workflows.</li>
+          <li>Interop teams requiring fallback distribution beyond network exchange.</li>
+          <li>Organizations maintaining mixed legacy systems while adopting container operations.</li>
+          <li>Integrators that need transparent, configurable media pipelines.</li>
+        </ul>
+      </article>
+    </section>
+
+    <p class="footer">
+      Repository: <a href="https://github.com/fleetwoodfc/dcm4chee-cdw">fleetwoodfc/dcm4chee-cdw</a><br/>
+      This brochure is intended as a hybrid business + technical overview for stakeholders including imaging IT, operations, and decision makers.
+    </p>
+  </div>
+</body>
+</html>
