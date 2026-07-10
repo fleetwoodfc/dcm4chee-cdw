@@ -37,7 +37,7 @@
       <name>JobRequestFolder</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="/var/lib/dcm4chee-cdw/ptburn/jobs" />
+         <value value="/var/lib/dcm4chee-cdw/ptburn" />
       </descriptors>
    </attribute>
 
@@ -78,7 +78,7 @@
       <name>SharedPathPrefix</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="\\HOST\ptburn" />
+         <value value="C:\PTBurnJobs" />
       </descriptors>
    </attribute>
 
