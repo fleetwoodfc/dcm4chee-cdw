@@ -40,7 +40,7 @@
       <name>AETofMediaWriter</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="PTPUBLISH=PTPublish,CDRECORD=CDRecord,NEROCMD=NeroCmd" />
+         <value value="PTPUBLISH=PTPublish" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
