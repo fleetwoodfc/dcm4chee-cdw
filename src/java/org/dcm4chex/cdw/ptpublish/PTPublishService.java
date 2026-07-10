@@ -550,15 +550,18 @@ public class PTPublishService extends MediaWriterServiceSupport {
             return "cannot read SystemStatus.txt: " + e.getMessage();
         }
 
-        if (systemStatus.indexOf("[RobotList]") < 0
-                || systemStatus.indexOf(robotName + "=") < 0) {
+        // The [RobotList] section lists robots as values: Robot0=<name>
+        // A named section [<robotName>] is also present when the robot is online.
+        // Accept either form so the check works regardless of PTBurn SDK version.
+        boolean robotListed = systemStatus.indexOf("=" + robotName) >= 0
+                || systemStatus.indexOf("[" + robotName + "]") >= 0;
+        if (systemStatus.indexOf("[RobotList]") < 0 || !robotListed) {
             return "robot not available: " + robotName
                     + " not listed in SystemStatus.txt";
         }
 
         return null;
     }
-
     private boolean scheduleMonitorRetry(MediaCreationRequest rq,
             Dataset attrs, String jobId, String statusInfo, String reason)
             throws IOException {
