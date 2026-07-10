@@ -18,13 +18,13 @@ services:
       - "8080:8080"     # JBoss HTTP / JMX console
     volumes:
       # PTBurn Job share (.jrq in, .don/.err out)
-      - ./ptburn/jobs:/var/lib/dcm4chee-cdw/ptburn/jobs
+      - C:/PTBurnJobs:/var/lib/dcm4chee-cdw/ptburn
       # PTBurn Status share (SystemStatus.txt, <RobotName>.txt)
-      - ./ptburn/status:/var/lib/dcm4chee-cdw/ptburn/status
+      - C:/PTBurnJobs/status:/var/lib/dcm4chee-cdw/ptburn/status
       # ISO share referenced by ImageFile in JRQ
-      - ./ptburn/iso:/opt/jboss/server/default/data/iso
+      - C:/PTBurnJobs/iso:/opt/jboss/server/default/data/iso
       # Label share referenced by PrintLabel in JRQ
-      - ./ptburn/label:/opt/jboss/server/default/data/label
+      - C:/PTBurnJobs/label:/opt/jboss/server/default/data/label
     environment:
       # Override JVM options if needed
       JAVA_OPTS: "-Xms128m -Xmx512m -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true"
